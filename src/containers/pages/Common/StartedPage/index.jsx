@@ -114,12 +114,12 @@ export default function StartedPage() {
         <Box className="box-content">
           <BoxTransition variant="fade">
             <Typography variant="h1" component="h1">
-              Wonder Studio
+              Azero Creative
             </Typography>
             <Typography variant="p" component="p">
-              Wonder Studio merupakan sebuah jasa percetakan digital yang melayani berbagai kebutuhan cetak anda seperti brosur, kartu nama,
-              poster, dan lainnya. Kami memberikan kualitas cetak yang terjamin dengan harga yang kompetitif sehingga membantu anda lebih
-              efisien dalam mencetak keperluan anda. Semua kebutuhan cetak dan printing kami sediakan dengan kualitas terbaik sehingga
+              Azero Creative merupakan sebuah jasa percetakan digital yang melayani berbagai kebutuhan cetak anda seperti brosur, kartu
+              nama, poster, dan lainnya. Kami memberikan kualitas cetak yang terjamin dengan harga yang kompetitif sehingga membantu anda
+              lebih efisien dalam mencetak keperluan anda. Semua kebutuhan cetak dan printing kami sediakan dengan kualitas terbaik sehingga
               menarik untuk dibaca serta interaktif.
             </Typography>
             <Box className="map-desc">
@@ -249,7 +249,7 @@ export default function StartedPage() {
                   borderRadius: 1000
                 }}
               >
-                <ArrowForwardIosRoundedIcon sx={{ fill: 'lightgrey', '&:hover': { fill: 'black' }  }} />
+                <ArrowForwardIosRoundedIcon sx={{ fill: 'lightgrey', '&:hover': { fill: 'black' } }} />
               </Button>
             </Box>
           )}
