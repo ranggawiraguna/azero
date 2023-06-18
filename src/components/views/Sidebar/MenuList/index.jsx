@@ -6,7 +6,13 @@ import { useLocation } from 'react-router';
 
 export default function MenuList() {
   const location = useLocation();
-  const menuItem = location.pathname.includes('admin') ? adminSidebar : customerSidebar;
+  const menuItem = (() => {
+    if (location.pathname.includes('admin')) {
+      return adminSidebar;
+    } else if (location.pathname.includes('customer')) {
+      return customerSidebar;
+    }
+  })();
 
   return menuItem.items.map((item, index) => {
     switch (item.type) {

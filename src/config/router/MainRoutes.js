@@ -13,8 +13,8 @@ const MainRoutes = [
     <Route key="Started Routes" path="/" element={<StartedContainer />} children={StartedRoutes} />,
     <Route key="Content Routes" element={<ManagerAccount />}>
       <Route key="Main Layout" element={<MainLayout />}>
-        <Route key="Customer" path="customer" element={<ValidateSession role="customer" />} children={CustomerRoutes} />
         <Route key="Admin" path="admin" element={<ValidateSession role="admin" />} children={AdminRoutes} />
+        <Route key="Customer" path="customer" element={<ValidateSession role="customer" />} children={CustomerRoutes} />
       </Route>
     </Route>
   </Route>,

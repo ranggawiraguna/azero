@@ -3,19 +3,144 @@ import { Fragment, useState } from 'react';
 import IconTrackingCurrent from 'assets/images/icon/TrackingCurrentPosition.svg';
 import IconTrackingOther from 'assets/images/icon/TrackingOtherPosition.svg';
 import Component from './styled';
-import { orderProcess, orderProcessDetail, orderType } from 'utils/other/EnvironmentValues';
+import { orderProcess, orderProcessDetail } from 'utils/other/EnvironmentValues';
 import FieldGroupView from 'components/elements/FieldGroupView';
 import { dateFormatter, moneyFormatter } from 'utils/other/Services';
 import OrderItem from 'components/elements/OrderItem';
-import DialogUpdateOrderProcess from 'components/views/DialogActionOrder/DialogUpdateOrderProcess';
-import DialogUpdateOrderPrice from 'components/views/DialogActionOrder/UpdateOrderPrice';
+import DialogUpdateOrderProcess from 'components/views/DialogActionOrder/UpdateOrderProcess';
+import { useSelector } from 'react-redux';
+import DialogUpdateDeliveryPrice from 'components/views/DialogActionOrder/UpdateDeliveryPrice';
+import AlertToast from 'components/elements/AlertToast';
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { db, storage } from 'config/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+import DialogUpdateRating from 'components/views/DialogActionOrder/UpdateRating';
 
 export default function OrderView({ data }) {
+  const accountReducer = useSelector((state) => state.accountReducer);
+
   const [isOpenDialogUpdateProcess, setOpenDialogUpdateProcess] = useState(false);
-  const [isOpenDialogUpdatePrice, setOpenDialogUpdatePrice] = useState(false);
+  const [isOpenDialogUpdateRating, setOpenDialogUpdateRating] = useState(false);
+  const [isOpenDialogUpdateDeliveryPrice, setOpenDialogUpdateDeliveryPrice] = useState(false);
   const [isOpenBackdropTransactionImage, setIsOpenBackdropTransactionImage] = useState(false);
 
-  return (
+  const [alertDescription, setAlertDescription] = useState({
+    isOpen: false,
+    type: 'info',
+    text: '',
+    transitionName: 'slideUp'
+  });
+
+  const handleUploadProofOfPayment = async (_) => {
+    if (_.target?.files?.[0]) {
+      let imageUrl;
+      try {
+        imageUrl = await getDownloadURL((await uploadBytes(ref(storage, `/order-payments/${data.id}`), _.target?.files?.[0])).ref);
+      } catch {
+        showAlertToast('warning', 'Terjadi kesalahan, silahkan coba lagi');
+      }
+
+      if (imageUrl) {
+        updateDoc(doc(db, 'orders', data.id), {
+          transactionInfo: {
+            ...data.transactionInfo,
+            image: imageUrl,
+            date: new Date()
+          }
+        })
+          .catch(() => {
+            showAlertToast('warning', 'Terjadi kesalahan, silahkan coba lagi');
+            deleteObject(ref(storage, `/order-payments/${data.id}`));
+          })
+          .then(() => {
+            showAlertToast('success', 'Berhasil mengupload bukti pembayaran');
+          });
+      }
+    }
+  };
+
+  const showAlertToast = (type, text) =>
+    setAlertDescription({
+      ...alertDescription,
+      isOpen: true,
+      type: type,
+      text: text
+    });
+
+  const getOptionalButtonAction = (processName) => {
+    switch (processName) {
+      case orderProcess.waitingPayment:
+        return (
+          <>
+            {data.processTracking[data.processTracking.length - 1].name === orderProcess.waitingPayment &&
+            accountReducer.role === 'customer' ? (
+              <Box sx={{ border: '2px solid grey', borderRadius: 1, marginTop: 1, padding: 1 }}>
+                <Typography variant="h5" component="h5" sx={{ fontWeight: 'bold' }}>
+                  Bank Central Asia (BCA)
+                </Typography>
+                <Typography variant="h5" component="h5">
+                  Muhammad Rifqi Ramadhan
+                </Typography>
+                <Typography variant="h5" component="h5">
+                  4061565889
+                </Typography>
+              </Box>
+            ) : (
+              <></>
+            )}
+            <Typography variant="p" component="p">
+              Status Pembayaran :&nbsp; {data.transactionInfo?.image ? 'Sudah' : 'Belum'} di upload
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {accountReducer.role === 'customer' ? (
+                <>
+                  <input hidden id="file-attachment" accept="image/*" type="file" multiple onChange={handleUploadProofOfPayment} />
+                  <label htmlFor="file-attachment">
+                    <Button component="span" variant="contained" className={'active'}>
+                      Upload
+                    </Button>
+                  </label>
+                </>
+              ) : (
+                <></>
+              )}
+              <Button
+                variant="contained"
+                className={data.transactionInfo?.image ? 'active' : 'inactive'}
+                onClick={
+                  data.transactionInfo?.image
+                    ? () => {
+                        document.body.style = 'overflow: hidden';
+                        setIsOpenBackdropTransactionImage(true);
+                      }
+                    : null
+                }
+              >
+                Lihat
+              </Button>
+            </Box>
+          </>
+        );
+
+      case orderProcess.orderFinished:
+        return (
+          <>
+            {accountReducer.role === 'customer' && !data.haveRated ? (
+              <Button variant="contained" className="active" sx={{ marginTop: 1 }} onClick={() => setOpenDialogUpdateRating(true)}>
+                Berikan Penilaian
+              </Button>
+            ) : (
+              <></>
+            )}
+          </>
+        );
+
+      default:
+        return <></>;
+    }
+  };
+
+  return Object.keys(data).length > 0 ? (
     <Fragment>
       <Component>
         <Box gridArea="A">
@@ -25,59 +150,86 @@ export default function OrderView({ data }) {
             </Typography>
             <Button
               variant="contained"
-              disabled={orderType.customization ? false : true}
-              sx={{ opacity: data.type === orderType.customization ? 1 : 0 }}
-              onClick={orderType.customization ? () => setOpenDialogUpdatePrice(true) : null}
+              disabled={
+                accountReducer.role === 'customer' ||
+                (data.processTracking ?? []).map((_) => _.name).includes(orderProcess.paymentConfirmed) ||
+                data.deliveryType === 'cod'
+              }
+              sx={{
+                opacity:
+                  accountReducer.role === 'customer' ||
+                  (data.processTracking ?? []).map((_) => _.name).includes(orderProcess.paymentConfirmed) ||
+                  data.deliveryType === 'cod'
+                    ? 0
+                    : 1
+              }}
+              onClick={
+                accountReducer.role === 'customer' ||
+                (data.processTracking ?? []).map((_) => _.name).includes(orderProcess.paymentConfirmed)
+                  ? null
+                  : () => setOpenDialogUpdateDeliveryPrice(true)
+              }
             >
-              Edit Harga
+              Edit Biaya Pengiriman
             </Button>
           </Box>
           <Box>
             <FieldGroupView title="No. Pesanan" data={data.id} sx={{ marginBottom: '20px' }} withFrame />
-            <FieldGroupView title="Username Pelanggan" data={data.customerId} sx={{ marginBottom: '20px' }} withFrame />
-            <FieldGroupView title="Nama Pelanggan" data={data.customerName} sx={{ marginBottom: '30px' }} withFrame />
-            <Typography variant="h4" component="h4" sx={{ color: '#666666', marginBottom: '10px', marginLeft: '2px' }}>
-              {data.type === orderType.customization ? 'Keterangan Kustomisasi' : 'Daftar Produk'}
-            </Typography>
-            {(() => {
-              return data.type === orderType.customization ? (
-                <OrderItem info={{ ...data.otherInfo, images: data.orderInfo.images }} sx={{ marginBottom: '10px' }} />
-              ) : (
-                data.otherInfo.map((item, index) => (
-                  <OrderItem
-                    key={index}
-                    info={item}
-                    sx={{
-                      marginBottom: '10px',
-                      paddingBottom: data.type !== orderType.order && index !== data.otherInfo.length - 1 ? '30px' : '10px'
-                    }}
-                  />
-                ))
-              );
-            })()}
-            <FieldGroupView title="Catatan Pesanan" data={data.textNotes} sx={{ marginTop: '30px', marginBottom: '20px' }} />
-            <FieldGroupView title="Alamat Tujuan" data={data.destinationAddress} sx={{ marginBottom: '20px' }} />
-            <FieldGroupView title="Opsi Pengiriman" data={data.shippingInfo.name} sx={{ marginBottom: '20px' }} />
-            <FieldGroupView title="Metode Pembayaran" data={data.paymentMethod} sx={{ marginBottom: '20px' }} />
+            <FieldGroupView title="Nama Pelanggan" data={data.name} sx={{ marginBottom: '20px' }} withFrame />
+            <FieldGroupView title="Nomor Telepon" data={data.phoneNumber} sx={{ marginBottom: '20px' }} withFrame />
+            <FieldGroupView
+              title="Tipe Pengiriman"
+              data={data.deliveryType === 'cod' ? 'Ambil Pesanan Ke Toko' : 'Antar Ke Alamat Tujuan'}
+              sx={{ marginBottom: '20px' }}
+              withFrame
+            />
+            <FieldGroupView
+              title="Alamat Tujuan"
+              data={data.address}
+              sx={{ marginBottom: '20px', ...(data.deliveryType === 'cod' ? { display: 'none' } : {}) }}
+              withFrame
+            />
             <FieldGroupView
               title="Tanggal Pesanan Dibuat"
               data={dateFormatter(data.dateCreated, 'eeee, d MMMM yyyy - HH:mm')}
               sx={{ marginBottom: '20px' }}
+              withFrame
             />
             <FieldGroupView
               title="Tanggal Pesanan Selesai"
-              data={data.dateFinished ? dateFormatter(data.dateFinished, 'eeee, d MMMM yyyy - HH:mm') : '-'}
+              data={dateFormatter(data.dateFinished, 'eeee, d MMMM yyyy - HH:mm')}
+              sx={{ marginBottom: '30px', ...(data.dateFinished ? {} : { display: 'none' }) }}
+              withFrame
             />
+            {data.products?.map((product, index) => (
+              <>
+                <Typography variant="h4" component="h4" sx={{ color: '#666666', marginBottom: '10px', marginLeft: '2px' }}>
+                  Daftar Produk
+                </Typography>
+                <OrderItem
+                  key={index}
+                  data={product}
+                  sx={{
+                    marginBottom: '10px',
+                    paddingBottom: '10px'
+                  }}
+                />
+              </>
+            ))}
           </Box>
         </Box>
         <Box gridArea="B">
           <Box>
             <Typography variant="h2" component="h2">
-              Proses Pelacakan
+              Proses Pesanan
             </Typography>
-            <Button variant="contained" onClick={() => setOpenDialogUpdateProcess(true)}>
-              Edit Proses
-            </Button>
+            {accountReducer.role === 'admin' ? (
+              <Button variant="contained" onClick={() => setOpenDialogUpdateProcess(true)}>
+                Edit Proses
+              </Button>
+            ) : (
+              <></>
+            )}
           </Box>
           <Box>
             <Box>
@@ -85,7 +237,7 @@ export default function OrderView({ data }) {
                 return (
                   <Fragment key={i}>
                     <Typography variant="p" component="p">
-                      {dateFormatter(e.date, 'd MMM')}
+                      {dateFormatter(e.date, 'dd/MM/yyyy')}
                       <br />
                       {dateFormatter(e.date, 'HH:mm')}
                     </Typography>
@@ -104,29 +256,7 @@ export default function OrderView({ data }) {
                       <Typography variant="p" component="p">
                         {orderProcessDetail[e.name].description}
                       </Typography>
-                      {e.name === orderProcess.waitingPayment ? (
-                        <Fragment>
-                          <Typography variant="p" component="p">
-                            Status Pembayaran :&nbsp; {data.transactionInfo.image ? 'Sudah' : 'Belum'} di upload
-                          </Typography>
-                          <Button
-                            variant="contained"
-                            className={data.transactionInfo.image ? 'active' : 'inactive'}
-                            onClick={
-                              data.transactionInfo.image
-                                ? () => {
-                                    document.body.style = 'overflow: hidden';
-                                    setIsOpenBackdropTransactionImage(true);
-                                  }
-                                : null
-                            }
-                          >
-                            Lihat Pembayaran
-                          </Button>
-                        </Fragment>
-                      ) : (
-                        <></>
-                      )}
+                      {getOptionalButtonAction(e.name)}
                     </Box>
                   </Fragment>
                 );
@@ -143,56 +273,74 @@ export default function OrderView({ data }) {
               Jumlah Produk
             </Typography>
             <Typography variant="p" component="p">
-              {data.totalCount ? data.totalCount : '-'}
+              {data.products ? data.products.reduce((a, b) => a + b.count, 0) : 0}
             </Typography>
             <Typography variant="h5" component="h5">
               Jumlah Harga Produk
             </Typography>
             <Typography variant="p" component="p">
-              {moneyFormatter(data.totalPrice ? data.totalPrice : '-')}
+              {moneyFormatter(data.products ? data.products.reduce((a, b) => a + b.price, 0) : 0)}
             </Typography>
-            <Typography variant="h5" component="h5">
-              Biaya Ongkos Kirim
-            </Typography>
-            <Typography variant="p" component="p">
-              {moneyFormatter(data.shippingInfo.price)}
-            </Typography>
+            {data.deliveryType === 'cod' ? (
+              <></>
+            ) : (
+              <>
+                <Typography variant="h5" component="h5">
+                  Jumlah Biaya Pengiriman
+                </Typography>
+                <Typography variant="p" component="p">
+                  {moneyFormatter(data.shippingPrice ?? 0)}
+                </Typography>
+              </>
+            )}
             <Typography variant="h5" component="h5">
               Jumlah Pembayaran
             </Typography>
             <Typography variant="p" component="p">
-              {data.totalPrice && data.shippingInfo.price ? moneyFormatter(data.totalPrice + data.shippingInfo.price) : 'Rp. -'}
+              {data.products ? moneyFormatter(data.products.reduce((a, b) => a + b.price, 0) + (data.shippingPrice ?? 0)) : 'Rp. -'}
             </Typography>
           </Box>
         </Box>
       </Component>
-      <DialogUpdateOrderProcess open={isOpenDialogUpdateProcess} onClose={() => setOpenDialogUpdateProcess(false)} data={data} />
-      <DialogUpdateOrderPrice open={isOpenDialogUpdatePrice} onClose={() => setOpenDialogUpdatePrice(false)} data={data} />
-      {(() => {
-        return data.transactionInfo.image ? (
-          <Backdrop
-            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1, padding: '2vw' }}
-            open={isOpenBackdropTransactionImage}
-            onClick={() => {
-              document.body.style = '';
-              setIsOpenBackdropTransactionImage(false);
+      <DialogUpdateOrderProcess
+        showAlert={showAlertToast}
+        open={isOpenDialogUpdateProcess}
+        onClose={() => setOpenDialogUpdateProcess(false)}
+        data={data}
+      />
+      <DialogUpdateDeliveryPrice
+        showAlert={showAlertToast}
+        open={isOpenDialogUpdateDeliveryPrice}
+        onClose={() => setOpenDialogUpdateDeliveryPrice(false)}
+        data={data}
+      />
+      <DialogUpdateRating open={isOpenDialogUpdateRating} onClose={() => setOpenDialogUpdateRating(false)} data={data} />
+      {data.transactionInfo?.image ? (
+        <Backdrop
+          sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1, padding: '2vw' }}
+          open={isOpenBackdropTransactionImage}
+          onClick={() => {
+            document.body.style = '';
+            setIsOpenBackdropTransactionImage(false);
+          }}
+        >
+          <Box
+            sx={{
+              width: '100%',
+              height: '100%',
+              backgroundImage: `url(${data.transactionInfo?.image})`,
+              backgroundPosition: 'center',
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat'
             }}
-          >
-            <Box
-              sx={{
-                width: '100%',
-                height: '100%',
-                backgroundImage: `url(${data.transactionInfo.image})`,
-                backgroundPosition: 'center',
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat'
-              }}
-            />
-          </Backdrop>
-        ) : (
-          <></>
-        );
-      })()}
+          />
+        </Backdrop>
+      ) : (
+        <></>
+      )}
+      <AlertToast description={alertDescription} setDescription={setAlertDescription} />
     </Fragment>
+  ) : (
+    <></>
   );
 }

@@ -1,21 +1,20 @@
 import { Box, Button, CardMedia, Typography } from '@mui/material';
 import Component from './styled';
 import IconOrderStatus from 'assets/images/icon/OrderStatusInfo.svg';
-import { orderProcessDetail, orderType } from 'utils/other/EnvironmentValues';
+import { orderProcessDetail } from 'utils/other/EnvironmentValues';
 import { useNavigate } from 'react-router';
 import { dateFormatter, moneyFormatter } from 'utils/other/Services';
 import { Fragment, useState } from 'react';
-import DialogUpdateOrderProcess from 'components/views/DialogActionOrder/DialogUpdateOrderProcess';
+import DialogUpdateOrderProcess from 'components/views/DialogActionOrder/UpdateOrderProcess';
 import IllustrationEmptyContent from 'assets/images/illustration/EmptyContent.svg';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from 'config/firebase';
+import OrderItem from 'components/elements/OrderItem';
+import AlertToast from 'components/elements/AlertToast';
 
-export default function OrderGrid({ data, type, isCompleteListener, isEmptySearch }) {
+export default function OrderGrid({ data, isAdmin = true, isCompleteListener, isEmptySearch, showLastProcess = true }) {
   const navigate = useNavigate();
 
   const [selectedData, setSelectedData] = useState({
     id: '',
-    type: type,
     customerId: '',
     customerName: '',
     totalPrice: 0,
@@ -28,77 +27,36 @@ export default function OrderGrid({ data, type, isCompleteListener, isEmptySearc
 
   const [isOpenDialogUpdateProcess, setOpenDialogUpdateProcess] = useState(false);
 
+  const [alertDescription, setAlertDescription] = useState({
+    isOpen: false,
+    type: 'info',
+    text: '',
+    transitionName: 'slideUp'
+  });
+
+  const showAlertToast = (type, text) =>
+    setAlertDescription({
+      ...alertDescription,
+      isOpen: true,
+      type: type,
+      text: text
+    });
+
   return data.length > 0 ? (
     <Fragment>
       <Component>
         {(() => {
           return data.map((element, index) => (
             <Box key={index} data={element}>
-              <Box gridTemplateAreas={`"A . B"`} gridTemplateColumns={'auto 1fr auto'}>
+              <Box gridTemplateAreas={`"A . B"`} gridTemplateColumns={'1fr 10px auto'}>
                 <Typography gridArea="A" variant="h4" component="h4">
-                  No Pesanan : {element.id}
+                  No Pesanan : {element.id.toString().toUpperCase()}
                 </Typography>
-                <Typography gridArea="B" variant="p" component="p">
+                <Typography gridArea="B" variant="p" component="p" marginBottom="auto">
                   {dateFormatter(element.dateCreated, 'eeee, d MMMM yyyy')}
                 </Typography>
               </Box>
-              <Box
-                gridTemplateAreas={{
-                  xs: `
-                "A B B"
-                "A C C"
-                "A D D"
-                "A E E"
-                "F F F"
-                `,
-                  sm: `
-                  "A B B"
-                  "A C C"
-                  "A D D"
-                  "A E F"
-                `
-                }}
-                gridTemplateColumns={'auto 1fr auto'}
-              >
-                <Box gridArea="A" sx={{ backgroundImage: `url(${element.productPhotoUrl})`, backgroundRepeat: 'no-repeat' }} />
-                <Typography gridArea="B" variant="p" component="p">
-                  {element.productName}
-                </Typography>
-                <Box gridArea="C">
-                  <Typography variant="p" component="p">
-                    Warna :
-                  </Typography>
-                  <Box sx={{ backgroundColor: element.color, border: '1px solid lightgrey' }} />
-                </Box>
-                <Box gridArea="D">
-                  <Typography variant="p" component="p">
-                    Ukuran :
-                  </Typography>
-                  {(() => {
-                    return type === orderType.order ? (
-                      <Box sx={{ backgroundColor: 'lightgrey' }}>
-                        <Typography variant="p" component="p">
-                          {element.size}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      element.sizes.map((size, index) => (
-                        <Box key={index} sx={{ backgroundColor: 'lightgrey' }}>
-                          <Typography variant="p" component="p">
-                            {size}
-                          </Typography>
-                        </Box>
-                      ))
-                    );
-                  })()}
-                </Box>
-                <Typography gridArea="E" variant="p" component="p">
-                  Jumlah : {element.count}
-                </Typography>
-                <Typography gridArea="F" variant="p" component="p">
-                  {moneyFormatter(element.price)}
-                </Typography>
-              </Box>
+              <OrderItem data={element.products[0]} />
               <Box>
                 <Box />
                 <Box />
@@ -107,17 +65,17 @@ export default function OrderGrid({ data, type, isCompleteListener, isEmptySearc
               <hr />
               <Box gridTemplateAreas={`"A . B C"`} gridTemplateColumns={'auto 1fr auto auto'}>
                 <Typography gridArea="A" variant="p" component="p">
-                  {element.totalCount} Produk
+                  Jumlah Produk : {element.products ? element.products.reduce((a, b) => a + b.count, 0) : 0}
                 </Typography>
                 <Typography gridArea="B" variant="p" component="p">
                   Total Pesanan :
                 </Typography>
                 <Typography gridArea="C" variant="p" component="p">
-                  {moneyFormatter(element.totalPrice)}
+                  {moneyFormatter(element.products.reduce((a, b) => a + b.price, 0))}
                 </Typography>
               </Box>
-              <hr />
-              <Box gridTemplateAreas={`"A B ."`} gridTemplateColumns={'auto auto 1fr'}>
+              <hr style={showLastProcess ? {} : { display: 'none' }} />
+              <Box gridTemplateAreas={`"A B ."`} gridTemplateColumns={'auto auto 1fr'} style={showLastProcess ? {} : { display: 'none' }}>
                 <CardMedia component="img" src={IconOrderStatus} />
                 <Typography gridArea="B" variant="p" component="p">
                   {orderProcessDetail[element.processTracking[element.processTracking.length - 1].name].description}
@@ -131,16 +89,11 @@ export default function OrderGrid({ data, type, isCompleteListener, isEmptySearc
                 <Box gridArea="A">
                   <Button
                     variant="contained"
-                    onClick={async () => {
-                      const customerSnapshot = await getDoc(doc(db, 'customers', element.customerId));
+                    sx={isAdmin ? {} : { display: 'none' }}
+                    onClick={() => {
                       setSelectedData({
                         id: element.id,
-                        type: type,
-                        customerId: element.customerId,
-                        customerName: customerSnapshot.exists() ? customerSnapshot.data().fullname : '',
-                        totalPrice: element.totalPrice,
-                        processTracking: element.processTracking,
-                        transactionInfo: element.transactionInfo
+                        ...element
                       });
                       setOpenDialogUpdateProcess(true);
                     }}
@@ -158,7 +111,13 @@ export default function OrderGrid({ data, type, isCompleteListener, isEmptySearc
           ));
         })()}
       </Component>
-      <DialogUpdateOrderProcess open={isOpenDialogUpdateProcess} onClose={() => setOpenDialogUpdateProcess(false)} data={selectedData} />
+      <DialogUpdateOrderProcess
+        showAlert={showAlertToast}
+        open={isOpenDialogUpdateProcess}
+        onClose={() => setOpenDialogUpdateProcess(false)}
+        data={selectedData}
+      />
+      <AlertToast description={alertDescription} setDescription={setAlertDescription} />
     </Fragment>
   ) : isCompleteListener && !isEmptySearch ? (
     <Box
@@ -175,8 +134,8 @@ export default function OrderGrid({ data, type, isCompleteListener, isEmptySearc
     >
       <Box
         sx={{
-          width: '80%',
-          height: '60%',
+          width: '60%',
+          height: '40%',
           backgroundImage: `url(${IllustrationEmptyContent})`,
           backgroundRepeat: 'no-repeat',
           backgroundSize: 'contain',

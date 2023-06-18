@@ -8,28 +8,28 @@ const customerSidebar = {
       type: 'group',
       children: [
         {
-          id: 'dashboard',
+          id: 'product',
           title: 'Beranda',
           type: 'item',
-          url: '/customer/dashboard',
+          url: '/customer/product',
           icon: IconDashboard
         },
         {
-          id: 'my-order',
+          id: 'order',
           title: 'Pesanan Saya',
           type: 'item',
           url: '/customer/order',
           icon: IconPaperBag
         },
         {
-          id: 'my-cart',
+          id: 'cart',
           title: 'Keranjang',
           type: 'item',
           url: '/customer/cart',
           icon: IconShoppingCart
         },
         {
-          id: 'my-favorite',
+          id: 'favorite',
           title: 'Favorit Saya',
           type: 'item',
           url: '/customer/favorite',

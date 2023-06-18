@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfi
 import { addDoc, collection, doc, getDocs, limit, query, updateDoc, where } from 'firebase/firestore';
 import { auth, db, storage } from 'config/firebase';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { validate } from 'react-email-validator';
 
 export const paths = { admin: 'admins', customer: 'customers' };
 
@@ -22,7 +23,9 @@ export function restoreSession(action) {
       let errorCheck = false;
       for (const path in paths) {
         try {
-          const docSnapshot = await getDocs(query(collection(db, paths[path]), where('username', '==', action.username.toLowerCase()), limit(1)));
+          const docSnapshot = await getDocs(
+            query(collection(db, paths[path]), where('username', '==', action.username.toLowerCase()), limit(1))
+          );
           if (!docSnapshot.empty) {
             data = { id: docSnapshot.docs[0].id, ...docSnapshot.docs[0].data() };
             role = path;
@@ -57,7 +60,9 @@ export function loginSession(action) {
       let errorCheck = false;
       for (const path in paths) {
         try {
-          const docSnapshot = await getDocs(query(collection(db, paths[path]), where('username', '==', action.data.username.toLowerCase()), limit(1)));
+          const docSnapshot = await getDocs(
+            query(collection(db, paths[path]), where('username', '==', action.data.username.toLowerCase()), limit(1))
+          );
           if (!docSnapshot.empty) {
             data = { id: docSnapshot.docs[0].id, ...docSnapshot.docs[0].data() };
             role = path;
@@ -81,10 +86,10 @@ export function loginSession(action) {
                 switch (role) {
                   case 'admin':
                     return action.navigate('/admin/dashboard');
-  
+
                   case 'customer':
-                    return action.navigate('/customer/dashboard');
-  
+                    return action.navigate('/customer/product');
+
                   default:
                     break;
                 }
@@ -131,23 +136,27 @@ export function registerSession(action) {
         showAlert('warning', 'Silahkan lengkapi form login dengan benar');
       } else if (action.data.username.length < 4 && action.data.username !== action.data.username.toLowerCase()) {
         showAlert('warning', 'Username harus terdiri dari huruf kecil dan minimal 4 karakter');
-      } else if (!action.data.email.toLowerCase().substring(action.data.email.length - 10, action.data.email.length) === '@gmail.com') {
-        showAlert('warning', 'Email yang dimasukkan tidak dapat digunakan');
       } else if (action.data.password.length < 8) {
         showAlert('warning', 'Password harus terdiri dari minimal 8 karakter');
       } else {
         let errorCheck = false;
         let emailAlreadyExists = false;
         let usernameAlreadyExists = false;
+        const emailInvalid = !validate('test@email.com');
+
         for (const path in paths) {
           try {
-            const usernameSnapshot = await getDocs(query(collection(db, paths[path]), where('username', '==', action.data.username.toLowerCase()), limit(1)));
+            const usernameSnapshot = await getDocs(
+              query(collection(db, paths[path]), where('username', '==', action.data.username.toLowerCase()), limit(1))
+            );
             if (!usernameSnapshot.empty) {
               usernameAlreadyExists = true;
               break;
             }
 
-            const emailSnapshot = await getDocs(query(collection(db, paths[path]), where('email', '==', action.data.email.toLowerCase()), limit(1)));
+            const emailSnapshot = await getDocs(
+              query(collection(db, paths[path]), where('email', '==', action.data.email.toLowerCase()), limit(1))
+            );
             if (!emailSnapshot.empty) {
               emailAlreadyExists = true;
               break;
@@ -164,6 +173,8 @@ export function registerSession(action) {
           showAlert('warning', 'Username yang dimasukkan telah digunakan');
         } else if (emailAlreadyExists) {
           showAlert('warning', 'Email yang dimasukkan telah digunakan');
+        } else if (emailInvalid) {
+          showAlert('warning', 'Email yang dimasukkan tidak valid');
         } else {
           try {
             const userCredential = await createUserWithEmailAndPassword(auth, action.data.email.toLowerCase(), action.data.password);
@@ -177,7 +188,7 @@ export function registerSession(action) {
             });
 
             await updateProfile(userCredential.user, {
-              displayName: action.data.toLowerCase()
+              displayName: action.data.username.toLowerCase()
             });
 
             await auth.signOut();
@@ -185,7 +196,7 @@ export function registerSession(action) {
             action.showAlertToast('success', 'Berhasil daftar akun');
             action.clearAuthForm();
           } catch (e) {
-            showAlert('warning', 'Terjadi kesalahan, silahkan coba lagi');
+            showAlert('warning', e.toString());
           }
         }
       }
@@ -202,7 +213,10 @@ export function updateIdentity(action) {
       if (action.data['photoUrl']) {
         try {
           const snapshot = await uploadBytes(
-            ref(storage, `/${paths[action.account.role]}-profile/${action.account.username.toLowerCase()}`),
+            ref(
+              storage,
+              `/${paths[action.account.role.substring(0, action.account.role.length - 1)]}-profile/${action.account.username.toLowerCase()}`
+            ),
             action.data.photoUrl
           );
           result = await getDownloadURL(snapshot.ref);
@@ -251,9 +265,9 @@ const accountReducer = (state = initialState, action) => {
     case actionTypes.RESTORE_SESSION:
       return {
         ...action.data,
-        id: action.data.id,
+        ...(action.data?.id ? { id: action.data.id } : {}),
+        ...(action.data?.id ? { isLogin: true } : {}),
         role: action.role,
-        isLogin: true
       };
 
     default:

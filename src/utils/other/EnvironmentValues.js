@@ -3,11 +3,6 @@ const tableDisplayType = {
   card: 'card'
 };
 
-const orderType = {
-  order: 'order',
-  preOrder: 'preOrder',
-  customization: 'customization'
-};
 
 const timeline = [
   {
@@ -62,35 +57,20 @@ const reverseTimelineValue = (value, timeline) => {
 
 const orderProcess = {
   orderCreate: 'orderCreate',
-  waitingProductionCheck: 'waitingProductionCheck',
-  productionCheckConfirmed: 'productionCheckConfirmed',
-  productionCheckCanceled: 'productionCheckCanceled',
   waitingPayment: 'waitingPayment',
   paymentConfirmed: 'paymentConfirmed',
-  waitingWarehouseDelivery: 'waitingWarehouseDelivery',
-  waitingProductionProcess: 'waitingProductionProcess',
-  shippedFromWarehouse: 'shippedFromWarehouse',
-  prepareOrder: 'prepareOrder',
+  prepareDesain: 'prepareDesain',
+  printingProcess: 'printingProcess',
   orderProcess: 'orderProcess',
-  orderFinished: 'orderFinished'
+  orderReadyPickup: 'orderReadyPickup',
+  orderFinished: 'orderFinished',
+  orderCanceled: 'orderCanceled',
 };
 
 const orderProcessDetail = {
   [orderProcess.orderCreate]: {
     title: 'Pesanan telah dibuat',
     description: 'Pesanan Anda telah dibuat, menunggu konfirmasi selanjutnya'
-  },
-  [orderProcess.waitingProductionCheck]: {
-    title: 'Pesanan sedang diperiksa bagian produksi',
-    description: 'Pesanan Anda sedang dilakukan pengecekan untuk dapat diproduksi, mohon tunggu sampai proses pengecekan selesai'
-  },
-  [orderProcess.productionCheckCanceled]: {
-    title: 'Produksi pesanan tidak dapat dilakukan',
-    description: 'Pesanan Anda tidak dapat dilanjutkan karena pihak konveksi belum dapat memproduksi pesanan yang Anda buat'
-  },
-  [orderProcess.productionCheckConfirmed]: {
-    title: 'Produksi pesanan telah dikonfirmasi',
-    description: 'Pesanan Anda telah terkonfirmasi siap untuk di produksi, silahkan lakukan intruksi selanjutnya untuk melanjutkan pesanan'
   },
   [orderProcess.waitingPayment]: {
     title: 'Menunggu pembayaran pesanan',
@@ -100,52 +80,41 @@ const orderProcessDetail = {
     title: 'Pembayaran telah di konfirmasi',
     description: 'Pembayaran telah dikonfirmasi, dimohon menunggu pesanan Anda untuk dikirim setelah diproses oleh penjual'
   },
-  [orderProcess.waitingWarehouseDelivery]: {
-    title: 'Menunggu pengiriman produk dari gudang',
-    description: 'Produk yang Anda pesan sedang menunggu pengiriman dari gudang untuk di proses'
+  [orderProcess.prepareDesain]: {
+    title: 'Pesanan Anda sedang dalam tahap desain',
+    description: 'Penjual sedang mempersiapkan desain untuk pesanan Anda, mohon tunggu sampai desain selesai dibuat'
   },
-  [orderProcess.waitingProductionProcess]: {
-    title: 'Menunggu proses produksi pesanan',
-    description: 'Produk yang Anda pesan sedang dalam tahap produksi, mohon tunggu sampai proses produksi selesai'
-  },
-  [orderProcess.shippedFromWarehouse]: {
-    title: 'Produk sedang dikirim dari gudang',
-    description: 'Produk yang Anda pesan sedang dalam perjalanan dari gudang ke toko'
-  },
-  [orderProcess.prepareOrder]: {
-    title: 'Pesanan Anda sedang di persiapkan',
-    description: 'Penjual sedang mempersiapkan pesanan Anda, mohon tunggu sampai pesanan anda sudah tersedia untuk dikirim'
+  [orderProcess.printingProcess]: {
+    title: 'Pesanan Anda sedang dalam proses pencetakan',
+    description: 'Paket Anda sudah dikirim oleh penjual, dimohon untuk melakukan konfirmasi ketika pesanan Anda telah sampai tujuan'
   },
   [orderProcess.orderProcess]: {
     title: 'Paket sedang dalam perjalanan',
     description: 'Paket Anda sudah dikirim oleh penjual, dimohon untuk melakukan konfirmasi ketika pesanan Anda telah sampai tujuan'
   },
+  [orderProcess.orderReadyPickup]: {
+    title: 'Pesanan Anda sudah siap',
+    description: 'Pesanan Anda sudah selesai dikerjakan, silahkan datang ke toko untuk mengambil pesanan kamu'
+  },
   [orderProcess.orderFinished]: {
-    title: 'Pesanan telah sampai',
-    description: 'Paket Anda sudah sampai tujuan, silahkan untuk memberikan penilaian terhadap produk yang telah Anda dapatkan'
-  }
-};
-
-const productCategory = {
-  modern: 'modern',
-  classic: 'classic',
-  motive: 'motive'
+    title: 'Pesanan telah selesai',
+    description: 'Pesanan Anda telah selesai, silahkan untuk memberikan penilaian terhadap produk yang telah Anda dapatkan'
+  },
+  [orderProcess.orderCanceled]: {
+    title: 'Pesanan dibatalkan',
+    description: 'Pesanan Anda telah dibatalkan, silhakan hubungi admin untuk keterangan lebih lanjut'
+  },
 };
 
 const defaultProductImage =
-  'https://firebasestorage.googleapis.com/v0/b/lfashion-ecommerce.appspot.com/o/item-photos%2F-.png?alt=media&token=42f2fc3a-63a6-453e-bec6-aed113b97441';
-
-const sizeAvailable = ['XL', 'L', 'M', 'S'];
+  'https://firebasestorage.googleapis.com/v0/b/wonder-studio.appspot.com/o/product-images%2F-.png?alt=media&token=3a73e6c7-87c0-4546-8c77-cd03858e832f';
 
 export {
   tableDisplayType,
-  orderType,
   timeline,
   timelineValues,
   reverseTimelineValue,
   orderProcess,
   orderProcessDetail,
-  productCategory,
   defaultProductImage,
-  sizeAvailable
 };
