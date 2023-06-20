@@ -28,7 +28,7 @@ export default styled(Box)(({ theme }) => ({
     '& > .box-content': {
       '& > div:nth-of-type(1)': {
         '& > p': {
-          lineHeight: 1.1
+          lineHeight: 1.1,
         }
       }
     },
@@ -235,7 +235,7 @@ export default styled(Box)(({ theme }) => ({
     borderTopRightRadius: '1.1vw',
     outline: 'white solid 0.5vw',
     '& .content': {
-      height: ' calc(100vh - 5vw)'
+      height: 'calc(100vh - 5vw)'
     },
     '& .section-one': {
       '& > div:last-child': {
@@ -264,7 +264,7 @@ export default styled(Box)(({ theme }) => ({
           textAlign: 'start'
         },
         '& > p': {
-          fontSize: '1.7vw',
+          fontSize: '2.5vw',
           textAlign: 'start'
         }
       }

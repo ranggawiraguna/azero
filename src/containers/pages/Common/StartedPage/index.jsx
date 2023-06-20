@@ -4,88 +4,61 @@ import IconLocationMap from 'assets/images/icon/LocationMap.png';
 import ToolbarStarted from 'components/elements/ToolbarStarted';
 import PageRoot from './styled';
 import { BoxTransition } from 'components/elements/MotionTransitions';
-import { Fragment, useEffect, useState } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { db } from 'config/firebase';
+import { Fragment } from 'react';
 import IconServiceOne from 'assets/images/icon/ServiceOne.png';
 import IconServiceTwo from 'assets/images/icon/ServiceTwo.png';
 import IconServiceThree from 'assets/images/icon/ServiceThree.png';
 import IconServiceFour from 'assets/images/icon/ServiceFour.png';
 import IconServiceFive from 'assets/images/icon/ServiceFive.png';
-import IconServiceSix from 'assets/images/icon/ServiceSix.png';
-import IconPhone from 'assets/images/icon/IconPhone.png';
+import IconInstagram from 'assets/images/icon/IconInstagram.png';
 import IconWhatsApp from 'assets/images/icon/IconWhatsApp.png';
 import IconGmail from 'assets/images/icon/IconGmail.png';
-import { useLocation, useParams } from 'react-router';
-import ProductCard from 'components/elements/CardProduct';
-import ProductDetailPage from '../ProductDetailPage';
+import { useLocation } from 'react-router';
+import { faker } from '@faker-js/faker';
+import { stringCapitalize } from 'utils/other/Services';
 
 export default function StartedPage() {
-  const params = useParams();
-
   const listService = [
     {
-      title: 'Terjangkau',
-      description: 'Tentunya di percetakan kami untuk masalah harga murah & terjangkau',
+      title: 'Profesional',
       icon: IconServiceOne
     },
     {
-      title: 'Berpengalaman',
-      description: 'Dan kami bekerja sangat berpengalaman dalam percetakan',
+      title: 'Cloud Save',
       icon: IconServiceTwo
     },
     {
-      title: 'Profesional',
-      description: 'Di percetakan kami untuk para pekerja sudah sangat profesional dalamm percetakan',
+      title: 'Berkualitas',
       icon: IconServiceThree
     },
     {
-      title: 'Bergaransi',
-      description: 'Jika ada kesalahan dalam hasil cetak dapat kami perbaiki',
+      title: 'Tepat Waktu',
       icon: IconServiceFour
     },
     {
-      title: 'Memuaskan',
-      description: 'Untuk di percetakan kami masalah hasil sangat memuaskan',
+      title: 'Terpercaya',
       icon: IconServiceFive
-    },
-    {
-      title: 'Cepat',
-      description: 'Dalam bekerja kami dapat melakukan dengan cepat dan teliti',
-      icon: IconServiceSix
     }
   ];
   const listContact = [
     {
-      title: 'Telepon',
-      description: '021-8791-4104',
-      icon: IconPhone
-    },
-    {
       title: 'WhatsApp',
-      description: '0859-6728-1635',
+      description: '0888 0000 9999',
       icon: IconWhatsApp
     },
     {
+      title: 'Instagram',
+      description: '@ardplayer',
+      icon: IconInstagram
+    },
+    {
       title: 'Gmail',
-      description: 'cibinong.wonder@gmail.com',
+      description: 'bxqwu_@gmail.com',
       icon: IconGmail
     }
   ];
 
   const location = useLocation();
-
-  const [products, setProducts] = useState([]);
-
-  useEffect(() => {
-    const listenerProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
-      setProducts(snapshot.docs.map((document) => ({ id: document.id, ...document.data() })));
-    });
-
-    return () => {
-      listenerProducts();
-    };
-  }, []);
 
   return (
     <PageRoot>
@@ -112,18 +85,34 @@ export default function StartedPage() {
                   <Box className="box-content">
                     <BoxTransition variant="fade">
                       <Typography variant="h1" component="h1">
-                        Wonder Studio
+                        Azero Creative
                       </Typography>
                       <Typography variant="p" component="p">
-                        Wonder Studio merupakan sebuah jasa percetakan digital yang melayani berbagai kebutuhan cetak anda seperti brosur,
-                        kartu nama, poster, dan lainnya. Kami memberikan kualitas cetak yang terjamin dengan harga yang kompetitif sehingga
-                        membantu anda lebih efisien dalam mencetak keperluan anda. Semua kebutuhan cetak dan printing kami sediakan dengan
-                        kualitas terbaik sehingga menarik untuk dibaca serta interaktif.
+                        Jasa Desain Grafis 3D Professional, Terpercaya, dan Berkualitas
+                      </Typography>
+                    </BoxTransition>
+                    <BoxTransition variant="fadeZoomRotate">
+                      <CardMedia component="img" src={LogoCircle} />
+                    </BoxTransition>
+                  </Box>
+                </Fragment>
+              );
+
+            case '/beranda':
+              return (
+                <Fragment>
+                  <Box className="box-content">
+                    <BoxTransition variant="fade">
+                      <Typography variant="h1" component="h1">
+                        Azero Creative
+                      </Typography>
+                      <Typography variant="p" component="p">
+                        Jasa Desain Grafis 3D Professional, Terpercaya, dan Berkualitas
                       </Typography>
                       <Box className="map-desc">
                         <CardMedia component="img" src={IconLocationMap} />
                         <Typography variant="p" component="p">
-                          Jl. Raya Jakarta-Bogor No.Km. 40,7, Pabuaran, Kec. Cibinong, Kabupaten Bogor, Jawa Barat 16916.
+                          Jalan Merpati 1 No.7 RT.003 RW.015, Kel. Menteng Dalam, Jakarta Selatan.
                         </Typography>
                       </Box>
                     </BoxTransition>
@@ -131,7 +120,6 @@ export default function StartedPage() {
                       <CardMedia component="img" src={LogoCircle} />
                     </BoxTransition>
                   </Box>
-                  <br />
                   <BoxTransition variant="fade">
                     <Button
                       onClick={() => {
@@ -144,28 +132,14 @@ export default function StartedPage() {
                     <br />
                     <br />
                     <br />
-                  </BoxTransition>
-                </Fragment>
-              );
-
-            case '/service':
-              return (
-                <Box className="content section-two">
-                  <BoxTransition variant="fade">
-                    <Box sx={{ flex: 1, boxSizing: 'border-box' }}>
-                      <Grid
-                        container
-                        columnSpacing={5}
-                        rowSpacing={{ xs: 2, md: 5 }}
-                        sx={{
-                          padding: '20px 50px 50px'
-                        }}
-                      >
+                    <Typography variant="h3" component="h3" fontSize={{ xs: 14, md: 20 }} sx={{ textAlign: 'center' }}>
+                      Mengapa Kami ?
+                    </Typography>
+                    <BoxTransition variant="fade">
+                      <Box sx={{ flex: 1, boxSizing: 'border-box', display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
                         {listService.map((_, __) => (
-                          <Grid
-                            item
+                          <Box
                             key={`service-${__}`}
-                            md={4}
                             sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
                           >
                             <Box sx={{ padding: 5 }}>
@@ -174,41 +148,106 @@ export default function StartedPage() {
                             <Typography component="h3" variant="h3" sx={{ paddingBottom: 1 }}>
                               {_.title}
                             </Typography>
-                            <Typography component="h4" variant="h4" sx={{ fontWeight: 'normal' }}>
-                              {_.description}
-                            </Typography>
-                          </Grid>
+                          </Box>
                         ))}
-                      </Grid>
-                    </Box>
+                      </Box>
+                    </BoxTransition>
+                    <br />
+                    <br />
+                    <br />
+                    <br />
                   </BoxTransition>
+                </Fragment>
+              );
+
+            case '/portofolio':
+              return (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <br />
+                  <br />
+                  <Typography variant="h3" component="h3" fontSize={20}>
+                    Beberapa Project Desain Gambar 3D Yang Pernah Kami Kerjakan
+                  </Typography>
+                  <Grid container spacing={5} sx={{ padding: '80px' }}>
+                    {Array.from(Array(4).keys()).map(() => (
+                      <Grid item xs={12} md={3}>
+                        <Box
+                          sx={{
+                            backgroundColor: 'lightgrey',
+                            aspectRatio: '1/1',
+                            width: '100%',
+                            borderRadius: 1,
+                            backgroundImage: `url(${faker.image.image(null, null, true)})`,
+                            backgroundPosition: 'center',
+                            backgroundSize: 'cover'
+                          }}
+                        ></Box>
+                      </Grid>
+                    ))}
+                  </Grid>
                 </Box>
               );
 
             case '/product':
               return (
-                <Box className="content section-three">
-                  <BoxTransition variant="fade">
-                    <Grid
-                      container
-                      spacing={2}
-                      sx={{
-                        padding: '0 30px 30px'
-                      }}
-                    >
-                      {(() =>
-                        products.map((_) => (
-                          <Grid item xs={12} sm={6} md={4} lg={3} alignContent="center">
-                            <ProductCard disableFavorite product={_} />
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <br />
+                  <br />
+                  <Typography variant="h3" component="h3" fontSize={20}>
+                    Daftar Harga Produk Jasa Desain Gambar 3D
+                  </Typography>
+                  <Grid container spacing={5} sx={{ padding: { xs: '40px 20px', sm: '80px' }, alignItems: 'stretch' }}>
+                    {Array.from(Array(4).keys()).map(() => (
+                      <Grid item xs={12} lg={6}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            backgroundColor: 'rgba(255,255,255,0.5)',
+                            borderRadius: 3,
+                            border: '3px solid rgba(0,0,0,0.1)',
+                            width: '100%',
+                            height: '100%'
+                          }}
+                        >
+                          <Grid container columnSpacing={1} sx={{ padding: 2 }}>
+                            <Grid item xs={8} sm={9}>
+                              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', paddingRight: 4 }}>
+                                <Typography variant="h4" sx={{ marginBottom: 1 }}>
+                                  Harga Desain
+                                </Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 'normal' }}>
+                                  Rp. 100.000 s/d Rp. 200.000
+                                </Typography>
+                                <br />
+                                <Typography variant="h4" sx={{ marginBottom: 1 }}>
+                                  Benefit
+                                </Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 'normal' }}>
+                                  {stringCapitalize(faker.lorem.words(30))}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                            <Grid item xs={4} sm={3}>
+                              <Box sx={{ width: '100%', aspectRatio: '1/1', borderRadius: 1, backgroundColor: 'lightgrey' }} />
+                              <br />
+                              <Typography variant="h4" sx={{ textAlign: 'center' }}>
+                                Example <br /> Design
+                              </Typography>
+                            </Grid>
                           </Grid>
-                        )))()}
-                    </Grid>
-                  </BoxTransition>
+                          <Box sx={{ padding: '10px', width: '100%' }}>
+                            <Button variant="contained" sx={{ width: '100%' }}>
+                              Lihat Selengkapnya
+                            </Button>
+                          </Box>
+                        </Box>
+                      </Grid>
+                    ))}
+                  </Grid>
                 </Box>
               );
-
-            case `/product/${params.id}`:
-              return <ProductDetailPage />;
 
             case '/contact':
               return (
@@ -222,12 +261,13 @@ export default function StartedPage() {
                     <Box
                       sx={{
                         display: 'flex',
-                        flexDirection: 'column',
+                        flexDirection: { xs: 'column', md: 'row' },
                         flexWrap: 'wrap',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: { xs: 5, md: 10 },
-                        padding: { xs: '0 20px', md: '0 50px' }
+                        rowGap: { xs: 5, md: 1 },
+                        columnGap: { xs: 5, md: 10 },
+                        padding: { xs: '0 20px', md: '100px 50px' }
                       }}
                     >
                       {listContact.map((_, __) => (

@@ -23,34 +23,19 @@ export default function ToolbarStarted(props) {
         {!isDownMd ? (
           <>
             <Box sx={{ flex: 1 }}>
-              <Link to="/profile">
+              <Link to="/beranda">
                 <Typography
                   sx={{
                     fontSize: 18,
                     fontWeight: 'bold',
-                    color: location.pathname === '/profile' ? 'black' : 'grey',
+                    color: location.pathname === '/beranda' ? 'black' : 'grey',
                     marginRight: 2,
                     '&:hover': {
                       color: 'black'
                     }
                   }}
                 >
-                  Profile
-                </Typography>
-              </Link>
-              <Link to="/service">
-                <Typography
-                  sx={{
-                    fontSize: 18,
-                    fontWeight: 'bold',
-                    color: location.pathname === '/service' ? 'black' : 'grey',
-                    marginRight: 2,
-                    '&:hover': {
-                      color: 'black'
-                    }
-                  }}
-                >
-                  Layanan
+                  Beranda
                 </Typography>
               </Link>
               <Link to="/product">
@@ -66,6 +51,36 @@ export default function ToolbarStarted(props) {
                   }}
                 >
                   Produk
+                </Typography>
+              </Link>
+              <Link to="/portofolio">
+                <Typography
+                  sx={{
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                    color: location.pathname === '/portofolio' ? 'black' : 'grey',
+                    marginRight: 2,
+                    '&:hover': {
+                      color: 'black'
+                    }
+                  }}
+                >
+                  Portofolio
+                </Typography>
+              </Link>
+              <Link to="/profile">
+                <Typography
+                  sx={{
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                    color: location.pathname === '/profile' ? 'black' : 'grey',
+                    marginRight: 2,
+                    '&:hover': {
+                      color: 'black'
+                    }
+                  }}
+                >
+                  Profile
                 </Typography>
               </Link>
               <Link to="/contact">
@@ -133,9 +148,10 @@ export default function ToolbarStarted(props) {
           <Divider />
           <List>
             {[
-              { name: 'Profile', path: '/profile' },
+              { name: 'Beranda', path: '/beranda' },
               { name: 'Produk', path: '/product' },
-              { name: 'Layanan', path: '/service' },
+              { name: 'Portofolio', path: '/portofolio' },
+              { name: 'Profile', path: '/profile' },
               { name: 'Kontak', path: '/contact' }
             ].map((text) => (
               <>
