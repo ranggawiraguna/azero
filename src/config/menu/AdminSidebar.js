@@ -1,11 +1,4 @@
-import {
-  IconDashboard,
-  IconReport,
-  IconTags,
-  IconUsers,
-  IconAccessible,
-  IconShoppingCart
-} from '@tabler/icons';
+import { IconDashboard, IconReport, IconTags, IconUsers,IconUser, IconAccessible, IconShoppingCart } from '@tabler/icons';
 
 const adminSidebar = {
   items: [
@@ -51,22 +44,31 @@ const adminSidebar = {
               title: 'Produk Terlaris',
               type: 'item',
               url: '/admin/popular-product'
-            },
+            }
           ]
         },
         {
-          id: 'account',
-          title: 'Admin',
-          type: 'item',
-          url: '/admin/account',
-          icon: IconAccessible
-        },
-        {
-          id: 'daftar-pelanggan',
-          title: 'Pelanggan',
-          type: 'item',
-          url: '/admin/daftar-pelanggan',
-          icon: IconUsers
+          id: 'user',
+          title: 'Pengguna',
+          type: 'collapse',
+          icon: IconUsers,
+
+          children: [
+            {
+              id: 'account',
+              title: 'Admin',
+              type: 'item',
+              url: '/admin/account',
+              icon: IconAccessible
+            },
+            {
+              id: 'daftar-pelanggan',
+              title: 'Pelanggan',
+              type: 'item',
+              url: '/admin/daftar-pelanggan',
+              icon: IconUser
+            }
+          ]
         },
         {
           id: 'product',
@@ -81,10 +83,9 @@ const adminSidebar = {
           type: 'item',
           url: '/admin/order',
           icon: IconShoppingCart
-        },
+        }
       ]
-    },
-    
+    }
   ]
 };
 

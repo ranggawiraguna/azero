@@ -1,4 +1,4 @@
-import { IconPaperBag, IconDashboard, IconShoppingCart, IconStar, IconHistory } from '@tabler/icons';
+import { IconPaperBag, IconDashboard, IconShoppingCart, IconHistory } from '@tabler/icons';
 
 const customerSidebar = {
   items: [
@@ -27,13 +27,6 @@ const customerSidebar = {
           type: 'item',
           url: '/customer/cart',
           icon: IconShoppingCart
-        },
-        {
-          id: 'favorite',
-          title: 'Favorit Saya',
-          type: 'item',
-          url: '/customer/favorite',
-          icon: IconStar
         },
         {
           id: 'history-order',

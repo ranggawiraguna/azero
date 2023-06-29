@@ -19,18 +19,7 @@ import ProductDiscussion from 'containers/templates/ProductDiscussion';
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const [product, setProduct] = useState({
-    id: '',
-    name: '',
-    price: 0,
-    description: '',
-    images: [defaultProductImage, defaultProductImage, defaultProductImage],
-    uom: '',
-    minimalOrder: '',
-    models: [],
-    sizes: [],
-    rating: []
-  });
+  const [product, setProduct] = useState({});
 
   const [imageSelected, setImageSelected] = useState(0);
   const [modelSelected, setModelSelected] = useState(null);
@@ -185,21 +174,21 @@ export default function ProductDetailPage() {
                 <Typography variant="h4">Penilaian Produk</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                   <Box display={{ flex: 1 }}>
-                    <Rating name="read-only" value={product.rating.reduce((a, b) => a + b.rateValue, 0) ?? 0} precision={0.1} readOnly />
+                    <Rating name="read-only" value={product.rating?.reduce((a, b) => a + b.rateValue, 0) ?? 0} precision={0.1} readOnly />
                     <Typography
                       variant="h5"
-                      sx={{ marginLeft: product.rating.length > 0 ? { sm: 0.5 } : {}, marginTop: product.rating.length > 0 ? 1 : 0 }}
+                      sx={{ marginLeft: product.rating?.length > 0 ? { sm: 0.5 } : {}, marginTop: product.rating?.length > 0 ? 1 : 0 }}
                     >
                       Keterangan :
                       {(() => {
-                        if (product.rating.length > 0) {
-                          if ((product.rating.reduce((a, b) => a + b.rateValue, 0) ?? 0) <= 1) {
+                        if (product.rating?.length > 0) {
+                          if ((product.rating?.reduce((a, b) => a + b.rateValue, 0) ?? 0) <= 1) {
                             return 'Sangat Kurang';
-                          } else if ((product.rating.reduce((a, b) => a + b.rateValue, 0) ?? 0) <= 2) {
+                          } else if ((product.rating?.reduce((a, b) => a + b.rateValue, 0) ?? 0) <= 2) {
                             return 'Kurang';
-                          } else if ((product.rating.reduce((a, b) => a + b.rateValue, 0) ?? 0) <= 3) {
+                          } else if ((product.rating?.reduce((a, b) => a + b.rateValue, 0) ?? 0) <= 3) {
                             return 'Cukup';
-                          } else if ((product.rating.reduce((a, b) => a + b.rateValue, 0) ?? 0) <= 4) {
+                          } else if ((product.rating?.reduce((a, b) => a + b.rateValue, 0) ?? 0) <= 4) {
                             return 'Baik';
                           } else {
                             return 'Sangat Baik';
@@ -211,7 +200,7 @@ export default function ProductDetailPage() {
                     </Typography>
                   </Box>
                   <Typography variant="h1" sx={{ padding: 1, fontSize: 42 }}>
-                    {product.rating.reduce((a, b) => a + b.rateValue, 0) ?? 0}
+                    {product.rating?.reduce((a, b) => a + b.rateValue, 0) ?? 0}
                   </Typography>
                 </Box>
               </Box>
