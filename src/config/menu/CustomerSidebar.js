@@ -15,18 +15,18 @@ const customerSidebar = {
           icon: IconDashboard
         },
         {
-          id: 'order',
-          title: 'Pesanan Saya',
-          type: 'item',
-          url: '/customer/order',
-          icon: IconPaperBag
-        },
-        {
           id: 'cart',
           title: 'Keranjang',
           type: 'item',
           url: '/customer/cart',
           icon: IconShoppingCart
+        },
+        {
+          id: 'order',
+          title: 'Pesanan Saya',
+          type: 'item',
+          url: '/customer/order',
+          icon: IconPaperBag
         },
         {
           id: 'history-order',

@@ -1,51 +1,39 @@
-import { Box, Button, Grid, InputBase, Rating, Typography } from '@mui/material';
+import { Box, Button, FormControl, Grid, InputLabel, OutlinedInput, Rating, Typography } from '@mui/material';
 import { Fragment, useEffect, useState } from 'react';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { moneyFormatter, stringCapitalize } from 'utils/other/Services';
-import ShoppingCart from '@mui/icons-material/AddShoppingCartRounded';
-import Spacer from 'components/elements/Spacer';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from 'config/firebase';
-import EastIcon from '@mui/icons-material/East';
 import { useParams } from 'react-router';
 import { defaultProductImage } from 'utils/other/EnvironmentValues';
-import { blue } from '@mui/material/colors';
-import DialogAddOrder from 'components/views/DialogActionOrder/AddOrder';
-import AlertToast from 'components/elements/AlertToast';
 import ProductDiscussion from 'containers/templates/ProductDiscussion';
+import ShoppingCart from '@mui/icons-material/AddShoppingCartRounded';
+import { blue } from '@mui/material/colors';
+import EastIcon from '@mui/icons-material/East';
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const [product, setProduct] = useState({});
+  const [product, setProduct] = useState({
+    id: '',
+    name: '',
+    price: 0,
+    description: '',
+    images: [defaultProductImage, defaultProductImage, defaultProductImage],
+    minimalOrder: '',
+    models: [],
+    sizes: [],
+    rating: []
+  });
 
   const [imageSelected, setImageSelected] = useState(0);
-  const [modelSelected, setModelSelected] = useState(null);
-  const [sizeSelected, setSizeSelected] = useState(null);
-  const [countCart, setCountCart] = useState(0);
-
+  const [packSelected, setPackSelected] = useState();
   const [alertDescription, setAlertDescription] = useState({
     isOpen: false,
     type: 'info',
     text: '',
     transitionName: 'slideUp'
   });
-
-  const [openDialogAddOrderType, setOpenDialogAddOrderType] = useState('');
-  const [openDialogAddOrder, setOpenDialogAddOrder] = useState(false);
-
-  const currentPrice =
-    product.price ??
-    (sizeSelected != null && modelSelected != null
-      ? (product.prices ?? []).find((_) => (_.fields ?? []).includes(sizeSelected) && (_.fields ?? []).includes(modelSelected)) ?? {
-          value: null
-        }
-      : (product.prices ?? []).find((_) => (_.fields ?? []).includes(sizeSelected) || (_.fields ?? []).includes(modelSelected)) ?? {
-          value: null
-        }
-    ).value;
 
   const showAlertToast = (type, text) =>
     setAlertDescription({
@@ -81,7 +69,7 @@ export default function ProductDetailPage() {
             <Box sx={{ width: '100%', position: 'relative' }}>
               <Box
                 sx={{
-                  aspectRatio: 1,
+                  aspectRatio: '1/1',
                   borderRadius: 3,
                   width: 'calc(100% - 50px)',
                   backgroundColor: 'lightgrey',
@@ -97,7 +85,7 @@ export default function ProductDetailPage() {
                 onClick={() => setImageSelected((imageSelected + (imageSelected > 0 ? 0 : 3) - 1) % 3)}
                 sx={{
                   position: 'absolute',
-                  aspectRatio: 1,
+                  aspectRatio: '1/1',
                   width: 50,
                   backgroundColor: 'white',
                   boxShadow: '1px 2px 2px 0 rgba(0,0,0,0.1)',
@@ -118,7 +106,7 @@ export default function ProductDetailPage() {
                 onClick={() => setImageSelected((imageSelected + 1) % 3)}
                 sx={{
                   position: 'absolute',
-                  aspectRatio: 1,
+                  aspectRatio: '1/1',
                   width: 50,
                   cursor: 'pointer',
                   backgroundColor: 'white',
@@ -145,7 +133,7 @@ export default function ProductDetailPage() {
                     ...{
                       borderRadius: 3,
                       flex: 1,
-                      aspectRatio: 1,
+                      aspectRatio: '1/1',
                       width: '100%',
                       cursor: 'pointer',
                       backgroundColor: 'lightgrey',
@@ -212,205 +200,196 @@ export default function ProductDetailPage() {
             <Typography variant="h1" sx={{ marginBottom: 1 }}>
               {stringCapitalize(product.name)}
             </Typography>
-            <Typography variant="h2" sx={{ color: 'rgba(0,0,0,0.5)' }}>
-              {currentPrice == null
-                ? product.price != null
-                  ? moneyFormatter(product.price)
-                  : product.prices != null
-                  ? product.prices.length > 1
-                    ? `${moneyFormatter(Math.min(...product.prices.map((_) => _.value)))}  s/d  ${moneyFormatter(
-                        Math.max(...product.prices.map((_) => _.value))
-                      )}`
-                    : product.prices.length > 0
-                    ? moneyFormatter(product.prices[0].value)
-                    : 'Rp. -'
-                  : 'Rp. -'
-                : moneyFormatter(currentPrice)}
-            </Typography>
-            <Box sx={{ height: '1px', width: '100%', backgroundColor: 'lightgrey', marginTop: 2, marginBottom: 2 }} />
-            <Typography variant="h4" sx={{ marginBottom: 1 }}>
-              Description
-            </Typography>
-            <Typography variant="h5">
-              {(product.description ?? '').toString().length > 0 ? product.description : 'Tidak Ada Deskripsi'}
-            </Typography>
-            <Spacer />
-            <Typography variant="h4" sx={{ marginBottom: 1 }}>
-              Satuan Jumlah
-            </Typography>
-            <Typography variant="h5" sx={{ marginBottom: 2 }}>
-              {stringCapitalize(product.uom ?? '-')}
-            </Typography>
-            <Typography variant="h4" sx={{ marginBottom: 1 }}>
-              Minimal Order
-            </Typography>
-            <Typography variant="h5" sx={{ marginBottom: 1 }}>
-              {stringCapitalize((product.minimalOrder ?? '-') + (product.minimalOrder ? ` ${product.uom}` : ''))}
-            </Typography>
-            <Box sx={{ height: '1px', width: '100%', backgroundColor: 'lightgrey', marginTop: 2, marginBottom: 2 }} />
-            {Array.from(product.models ?? []).length > 0 ? (
+            {packSelected ? (
               <>
-                <Typography variant="h4" sx={{ marginBottom: 1 }}>
-                  Jenis
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {product.models.map((_) => (
-                    <Box
-                      onClick={() => (modelSelected === _ ? setModelSelected(null) : setModelSelected(_))}
-                      sx={{
-                        ...{ padding: '5px 15px', borderRadius: 1, cursor: 'pointer' },
-                        ...(modelSelected === _
-                          ? { backgroundColor: 'rgb(44,44,44)', border: '2px solid rgb(44,44,44)' }
-                          : { border: '2px solid grey' })
-                      }}
-                    >
-                      <Typography variant="p" sx={{ color: modelSelected === _ ? 'white' : 'grey', fontFamily: 'Folks' }}>
-                        {stringCapitalize(_)}
-                      </Typography>
-                    </Box>
-                  ))}
+                <Box sx={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'space-between' }}>
+                  <Typography variant="h3" sx={{ marginBottom: 1, marginTop: 2 }}>
+                    Paket Dipilih
+                  </Typography>
+                  <Button variant="text" onClick={() => setPackSelected(null)}>
+                    Ubah Paket
+                  </Button>
                 </Box>
-                <Spacer />
-              </>
-            ) : (
-              <></>
-            )}
-            {Array.from(product.sizes ?? []).length > 0 ? (
-              <>
-                <Typography variant="h4" sx={{ marginBottom: 1 }}>
-                  Ukuran
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, marginBottom: 2 }}>
-                  {product.sizes.map((_) => (
-                    <Box
-                      onClick={() => (sizeSelected === _ ? setSizeSelected(null) : setSizeSelected(_))}
-                      sx={{
-                        ...{ padding: '5px 15px', borderRadius: 1, cursor: 'pointer' },
-                        ...(sizeSelected === _
-                          ? { backgroundColor: 'rgb(44,44,44)', border: '2px solid rgb(44,44,44)' }
-                          : { border: '2px solid grey' })
-                      }}
-                    >
-                      <Typography variant="p" sx={{ color: sizeSelected === _ ? 'white' : 'grey', fontFamily: 'Folks' }}>
-                        {stringCapitalize(_)}
-                      </Typography>
-                    </Box>
-                  ))}
+                <Box
+                  sx={{
+                    minHeight: 100,
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    width: '100%',
+                    border: '2px solid rgba(0,0,0,0.2)',
+                    borderRadius: 2,
+                    padding: 1,
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}
+                >
+                  <Typography variant="h4">Paket {packSelected}</Typography>
+                  <Typography variant="h4" sx={{ marginBottom: 2, color: 'rgba(0,0,0,0.5)' }}>
+                    {moneyFormatter(Math.floor(Math.random() * 100000) + 100000)}
+                  </Typography>
+                  <Typography variant="h4">Benefit :</Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 'normal' }}>
+                    Revisi 1x, Proses 9-10 hari, File Master FBX, Color Guide, Export JPG / PNG / PDF
+                  </Typography>
                 </Box>
               </>
             ) : (
               <></>
             )}
-            <Typography variant="h4" sx={{ marginBottom: 1 }}>
-              Jumlah
-            </Typography>
-            <Box
-              sx={{
-                minHeight: 40,
-                outline: countCart > 0 ? '2px solid rgb(44,44,44)' : '2px solid grey',
-                backgroundColor: countCart > 0 ? 'rgb(44,44,44)' : 'transparent',
-                borderRadius: 2,
-                display: 'flex',
-                width: 'fit-content'
-              }}
-            >
-              <Box
-                onClick={() => ((countCart || 0) > 0 ? setCountCart(countCart - 1) : null)}
-                sx={{
-                  aspectRatio: 1,
-                  margin: 1,
-                  display: 'flex',
-                  cursor: 'pointer',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  backgroundColor: countCart > 0 ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.1)',
-                  borderRadius: 1
-                }}
-              >
-                <RemoveIcon sx={{ fill: countCart > 0 ? 'white' : 'grey' }} />
-              </Box>
-              <InputBase
-                value={(parseInt(countCart) || 0) > 0 ? countCart.toString().replace(/^0+/, '') : ''}
-                onChange={(_) => setCountCart(_.target.value.replace(/^0+/, ''))}
-                sx={{
-                  textAlign: 'center',
-                  '& input': {
-                    color: countCart > 0 ? 'white' : 'black',
-                    textAlign: 'center'
-                  }
-                }}
-                align="center"
-              />
-              <Box
-                onClick={() => setCountCart((parseInt(countCart) || 0) + 1)}
-                sx={{
-                  aspectRatio: 1,
-                  margin: 1,
-                  display: 'flex',
-                  cursor: 'pointer',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  backgroundColor: countCart > 0 ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.1)',
-                  borderRadius: 1
-                }}
-              >
-                <AddIcon sx={{ fill: countCart > 0 ? 'white' : 'grey' }} />
-              </Box>
-            </Box>
-            <Box sx={{ flex: 1 }} />
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                alignItems: 'stretch',
-                justifyContent: { sx: 'center', sm: 'flex-end' },
-                gap: { xs: 2, xm: 5 },
-                marginTop: 2
-              }}
-            >
-              <Button
-                variant="outlined"
-                sx={{ display: 'flex', gap: '10px', padding: '10px 25px' }}
-                onClick={() => {
-                  if (
-                    (Array.from(product.sizes ?? []).length > 0 ? sizeSelected != null : true) &&
-                    (Array.from(product.models ?? []).length > 0 ? modelSelected != null : true) &&
-                    (countCart ?? 0) > 0
-                  ) {
-                    setOpenDialogAddOrderType('Cart');
-                    setOpenDialogAddOrder(true);
-                  } else {
-                    showAlertToast('warning', 'Silahkan lengkapi keterangan pesanan kamu');
-                  }
-                }}
-              >
-                <ShoppingCart />
-                <Typography variant="h4" color={blue[500]}>
-                  Masukkan Ke Keranjang
+            <Box sx={{ height: '1px', width: '100%', backgroundColor: 'lightgrey', marginTop: 2, marginBottom: 2 }} />
+            {packSelected ? (
+              <>
+              <Typography variant="h3" sx={{ marginBottom: 3, marginTop: 2 }}>
+                    Formulir Pesanan
+                  </Typography>
+                <FormControl variant="outlined" className="input">
+                  <InputLabel htmlFor="InputNamLengkap">Nama Lengkap</InputLabel>
+                  <OutlinedInput
+                    id="InputNamaLengkap"
+                    type="text"
+                    label="Nama Lengkap"
+                    placeholder="Masukkan Nama Lengkap"
+                    autoComplete="off"
+                  />
+                </FormControl>
+                <br/>
+                <FormControl variant="outlined" className="input">
+                  <InputLabel htmlFor="InputEmail">Email</InputLabel>
+                  <OutlinedInput
+                    id="InputEmail"
+                    type="email"
+                    label="Email"
+                    placeholder="Email"
+                    autoComplete="off"
+                  />
+                </FormControl>
+                <br/>
+                <FormControl variant="outlined" className="input">
+                  <InputLabel htmlFor="InputTelepon">No. Telepon</InputLabel>
+                  <OutlinedInput
+                    id="InputTelepon"
+                    type="text"
+                    label="No. Telepon"
+                    placeholder="text"
+                    autoComplete="off"
+                  />
+                </FormControl>
+                <br/>
+                <FormControl variant="outlined" className="input">
+                  <InputLabel htmlFor="InputWarna">Warna</InputLabel>
+                  <OutlinedInput
+                    id="InputWarna"
+                    type="text"
+                    label="Warna"
+                    placeholder="text"
+                    autoComplete="off"
+                  />
+                </FormControl>
+                <br/>
+                <FormControl variant="outlined" className="input">
+                  <InputLabel htmlFor="InputJumlah">Jumlah</InputLabel>
+                  <OutlinedInput
+                    id="InputJumlah"
+                    type="text"
+                    label="Jumlah"
+                    placeholder="text"
+                    autoComplete="off"
+                  />
+                </FormControl>
+                <br/>
+                <FormControl variant="outlined" className="input">
+                  <InputLabel htmlFor="InputReferensiDesain">Referensi Desain</InputLabel>
+                  <OutlinedInput
+                    id="InputReferensiDesain"
+                    type="text"
+                    label="Referensi Desain"
+                    placeholder="text"
+                    autoComplete="off"
+                  />
+                </FormControl>
+                <br/>
+                <FormControl variant="outlined" className="input">
+                  <InputLabel htmlFor="InputCatatan">Catatan</InputLabel>
+                  <OutlinedInput
+                    id="InputCatatan"
+                    type="text"
+                    label="Catatan"
+                    placeholder="text"
+                    autoComplete="off"
+                  />
+                </FormControl>
+                <Box sx={{ flex: 1 }} />
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    alignItems: 'stretch',
+                    justifyContent: { sx: 'center', sm: 'flex-end' },
+                    gap: { xs: 2, xm: 5 },
+                    marginTop: 2
+                  }}
+                >
+                  <Button
+                    variant="outlined"
+                    sx={{ display: 'flex', gap: '10px', padding: '10px 25px' }}
+                    onClick={() => {
+                      //
+                    }}
+                  >
+                    <ShoppingCart />
+                    <Typography variant="h4" color={blue[500]}>
+                      Masukkan Ke Keranjang
+                    </Typography>
+                  </Button>
+                  <Button
+                    variant="contained"
+                    sx={{ display: 'flex', gap: '10px', padding: '10px 25px' }}
+                    onClick={() => {
+                      //
+                    }}
+                  >
+                    <Typography variant="h4" sx={{ color: 'white' }}>
+                      Pesan Produk
+                    </Typography>
+                    <EastIcon />
+                  </Button>
+                </Box>
+              </>
+            ) : (
+              <>
+                <Typography variant="h3" sx={{ marginBottom: 2 }}>
+                  Pilihan Paket
                 </Typography>
-              </Button>
-              <Button
-                variant="contained"
-                sx={{ display: 'flex', gap: '10px', padding: '10px 25px' }}
-                onClick={() => {
-                  if (
-                    (Array.from(product.sizes ?? []).length > 0 ? sizeSelected != null : true) &&
-                    (Array.from(product.models ?? []).length > 0 ? modelSelected != null : true) &&
-                    (countCart ?? 0) > 0
-                  ) {
-                    setOpenDialogAddOrderType('Order');
-                    setOpenDialogAddOrder(true);
-                  } else {
-                    showAlertToast('warning', 'Silahkan lengkapi keterangan pesanan kamu');
-                  }
-                }}
-              >
-                <Typography variant="h4" sx={{ color: 'white' }}>
-                  Pesan Produk
-                </Typography>
-                <EastIcon />
-              </Button>
-            </Box>
+                {['Terjangkau', 'Standar', 'Ultimate'].map((_) => (
+                  <>
+                    <Box
+                      sx={{
+                        minHeight: 100,
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        width: '100%',
+                        border: '2px solid rgba(0,0,0,0.2)',
+                        borderRadius: 2,
+                        padding: 1,
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}
+                    >
+                      <Typography variant="h4">Paket {_}</Typography>
+                      <Typography variant="h4" sx={{ marginBottom: 2, color: 'rgba(0,0,0,0.5)' }}>
+                        {moneyFormatter(Math.floor(Math.random() * 100000) + 100000)}
+                      </Typography>
+                      <Typography variant="h4">Benefit :</Typography>
+                      <Typography variant="h4" sx={{ marginBottom: 3, fontWeight: 'normal' }}>
+                        Revisi 1x, Proses 9-10 hari, File Master FBX, Color Guide, Export JPG / PNG / PDF
+                      </Typography>
+                      <Button sx={{ alignSelf: 'flex-end' }} variant="contained" onClick={() => setPackSelected(_)}>
+                        Pilih Paket
+                      </Button>
+                    </Box>
+                    <br />
+                  </>
+                ))}
+              </>
+            )}
           </Box>
         </Grid>
         <Grid item xs={12}>
@@ -419,28 +398,6 @@ export default function ProductDetailPage() {
           </Box>
         </Grid>
       </Grid>
-      <DialogAddOrder
-        open={openDialogAddOrder}
-        type={openDialogAddOrderType}
-        showAlert={showAlertToast}
-        currentPrice={currentPrice}
-        data={{
-          product: product,
-          sizeSelected: sizeSelected,
-          modelSelected: modelSelected,
-          countCart: countCart
-        }}
-        onClose={(isSuccess) => {
-          if (isSuccess) {
-            setSizeSelected(null);
-            setModelSelected(null);
-            setCountCart(0);
-          }
-          setOpenDialogAddOrderType('');
-          setOpenDialogAddOrder(false);
-        }}
-      />
-      <AlertToast description={alertDescription} setDescription={setAlertDescription} />
     </Fragment>
   );
 }
