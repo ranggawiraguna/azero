@@ -1,4 +1,4 @@
-import { Box, Button, FormControl, Grid, InputLabel, OutlinedInput, Rating, Typography } from '@mui/material';
+import { Box, Button, FormControl, Grid, OutlinedInput, Rating, Typography } from '@mui/material';
 import { Fragment, useEffect, useState } from 'react';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
@@ -11,6 +11,10 @@ import ProductDiscussion from 'containers/templates/ProductDiscussion';
 import ShoppingCart from '@mui/icons-material/AddShoppingCartRounded';
 import { blue } from '@mui/material/colors';
 import EastIcon from '@mui/icons-material/East';
+import { IconChevronRight } from '@tabler/icons';
+import ColorPicker from 'components/elements/ColorPicker';
+import InputImageComponent from 'components/elements/InputImage';
+import Lightbox from 'react-awesome-lightbox';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -27,7 +31,11 @@ export default function ProductDetailPage() {
   });
 
   const [imageSelected, setImageSelected] = useState(0);
+  const [uploadImages, setUploadImages] = useState([]);
+  const [uploadImageOverlay, setUploadImageOverlay] = useState(null);
+  const [colorSelected, setColorSelected] = useState([]);
   const [packSelected, setPackSelected] = useState();
+  const [openDialogColorPicker, setOpenDialogColorPicker] = useState(false);
   const [alertDescription, setAlertDescription] = useState({
     isOpen: false,
     type: 'info',
@@ -42,6 +50,12 @@ export default function ProductDetailPage() {
       type: type,
       text: text
     });
+
+  const handleOnChangeImage = (event) => {
+    if (Array.from(event.target?.files ?? []).length > 0) {
+      setUploadImages([...uploadImages, ...Array.from(event.target?.files ?? [])]);
+    }
+  };
 
   useEffect(() => {
     const listenerProduct = onSnapshot(doc(db, 'products', params.id), (snapshot) => {
@@ -235,86 +249,205 @@ export default function ProductDetailPage() {
             ) : (
               <></>
             )}
-            <Box sx={{ height: '1px', width: '100%', backgroundColor: 'lightgrey', marginTop: 2, marginBottom: 2 }} />
+            <Box
+              sx={{
+                height: '1px',
+                width: '100%',
+                backgroundColor: 'lightgrey',
+                marginTop: 2,
+                marginBottom: 2
+              }}
+            />
             {packSelected ? (
               <>
-              <Typography variant="h3" sx={{ marginBottom: 3, marginTop: 2 }}>
-                    Formulir Pesanan
-                  </Typography>
-                <FormControl variant="outlined" className="input">
-                  <InputLabel htmlFor="InputNamLengkap">Nama Lengkap</InputLabel>
+                <Typography variant="h3" sx={{ marginBottom: 3, marginTop: 2 }}>
+                  Formulir Pesanan
+                </Typography>
+                <Typography variant="h4" sx={{ marginBottom: 1, color: 'rgba(0,0,0,0.6)' }}>
+                  Nama Lengkap
+                </Typography>
+                <FormControl
+                  variant="outlined"
+                  className="input"
+                  sx={{ background: 'transparent', backgroundColor: 'transparent', marginBottom: 2 }}
+                >
                   <OutlinedInput
                     id="InputNamaLengkap"
                     type="text"
-                    label="Nama Lengkap"
-                    placeholder="Masukkan Nama Lengkap"
                     autoComplete="off"
+                    sx={{ background: 'transparent', backgroundColor: 'transparent' }}
+                    inputProps={{
+                      style: {
+                        background: 'rgba(255,255,255,0.5)',
+                        backgroundColor: 'rgba(255,255,255,0.5)'
+                      }
+                    }}
                   />
                 </FormControl>
-                <br/>
-                <FormControl variant="outlined" className="input">
-                  <InputLabel htmlFor="InputEmail">Email</InputLabel>
+                <Typography variant="h4" sx={{ marginBottom: 1, color: 'rgba(0,0,0,0.6)' }}>
+                  Email
+                </Typography>
+                <FormControl
+                  variant="outlined"
+                  className="input"
+                  sx={{ background: 'transparent', backgroundColor: 'transparent', marginBottom: 2 }}
+                >
                   <OutlinedInput
                     id="InputEmail"
                     type="email"
-                    label="Email"
-                    placeholder="Email"
                     autoComplete="off"
+                    sx={{ background: 'transparent', backgroundColor: 'transparent' }}
+                    inputProps={{
+                      style: {
+                        background: 'rgba(255,255,255,0.5)',
+                        backgroundColor: 'rgba(255,255,255,0.5)'
+                      }
+                    }}
                   />
                 </FormControl>
-                <br/>
-                <FormControl variant="outlined" className="input">
-                  <InputLabel htmlFor="InputTelepon">No. Telepon</InputLabel>
+                <Typography variant="h4" sx={{ marginBottom: 1, color: 'rgba(0,0,0,0.6)' }}>
+                  Nomor Telepon
+                </Typography>
+                <FormControl
+                  variant="outlined"
+                  className="input"
+                  sx={{ background: 'transparent', backgroundColor: 'transparent', marginBottom: 2 }}
+                >
                   <OutlinedInput
                     id="InputTelepon"
                     type="text"
-                    label="No. Telepon"
-                    placeholder="text"
                     autoComplete="off"
+                    sx={{ background: 'transparent', backgroundColor: 'transparent' }}
+                    inputProps={{
+                      style: {
+                        background: 'rgba(255,255,255,0.5)',
+                        backgroundColor: 'rgba(255,255,255,0.5)'
+                      }
+                    }}
                   />
                 </FormControl>
-                <br/>
-                <FormControl variant="outlined" className="input">
-                  <InputLabel htmlFor="InputWarna">Warna</InputLabel>
-                  <OutlinedInput
-                    id="InputWarna"
-                    type="text"
-                    label="Warna"
-                    placeholder="text"
-                    autoComplete="off"
-                  />
-                </FormControl>
-                <br/>
-                <FormControl variant="outlined" className="input">
-                  <InputLabel htmlFor="InputJumlah">Jumlah</InputLabel>
-                  <OutlinedInput
-                    id="InputJumlah"
-                    type="text"
-                    label="Jumlah"
-                    placeholder="text"
-                    autoComplete="off"
-                  />
-                </FormControl>
-                <br/>
-                <FormControl variant="outlined" className="input">
-                  <InputLabel htmlFor="InputReferensiDesain">Referensi Desain</InputLabel>
-                  <OutlinedInput
-                    id="InputReferensiDesain"
-                    type="text"
-                    label="Referensi Desain"
-                    placeholder="text"
-                    autoComplete="off"
-                  />
-                </FormControl>
-                <br/>
-                <FormControl variant="outlined" className="input">
-                  <InputLabel htmlFor="InputCatatan">Catatan</InputLabel>
+                <Box sx={{ marginBottom: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography variant="h4" sx={{ flex: 1, marginBottom: colorSelected.length > 0 ? 0 : 1, color: 'rgba(0,0,0,0.6)' }}>
+                      Refrensi Warna
+                    </Typography>
+                    {colorSelected.length > 0 ? (
+                      <Button variant="text" onClick={() => setOpenDialogColorPicker(true)}>
+                        Tambah
+                      </Button>
+                    ) : (
+                      <></>
+                    )}
+                  </Box>
+                  <Box
+                    sx={{
+                      border: '1.5px solid rgba(0,0,0,0.2)',
+                      backgroundColor: 'rgba(255,255,255,0.3)',
+                      padding: 1,
+                      borderRadius: 2,
+                      display: 'flex',
+                      gap: 1,
+                      flexWrap: 'wrap'
+                    }}
+                  >
+                    {colorSelected.length > 0 ? (
+                      <>
+                        {colorSelected.map((_) => (
+                          <Box sx={{ width: 30, height: 30, borderRadius: 1, backgroundColor: _, border: '2px solid rgba(0,0,0,0.4)' }} />
+                        ))}
+                      </>
+                    ) : (
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', width: '100%' }}
+                        onClick={() => setOpenDialogColorPicker(true)}
+                      >
+                        <Typography variant="p" sx={{ flex: 1 }}>
+                          Pilih Warna
+                        </Typography>
+                        <IconChevronRight size={24} strokeWidth={2} color={'black'} />
+                      </Box>
+                    )}
+                  </Box>
+                </Box>
+                <Box sx={{ marginBottom: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography variant="h4" sx={{ flex: 1, marginBottom: uploadImages.length > 0 ? 0 : 1, color: 'rgba(0,0,0,0.6)' }}>
+                      Referensi Desain
+                    </Typography>
+                    {uploadImages.length > 0 ? (
+                      <InputImageComponent onChange={handleOnChangeImage}>
+                        <Typography variant="h5" sx={{ padding: 1, color: '#2196f3', cursor: 'pointer' }}>
+                          Tambah
+                        </Typography>
+                      </InputImageComponent>
+                    ) : (
+                      <></>
+                    )}
+                  </Box>
+                  <Box
+                    sx={{
+                      border: '1.5px solid rgba(0,0,0,0.2)',
+                      backgroundColor: 'rgba(255,255,255,0.3)',
+                      padding: 1,
+                      borderRadius: 2,
+                      display: 'flex',
+                      gap: 1,
+                      flexWrap: 'wrap'
+                    }}
+                  >
+                    {uploadImages.length > 0 ? (
+                      <Grid container spacing={1}>
+                        {uploadImages.map((_) => (
+                          <Grid item xs={2}>
+                            <Box
+                              sx={{
+                                aspectRatio: '1/1',
+                                width: '100%',
+                                borderRadius: 1,
+                                backgroundImage: `url(${URL.createObjectURL(_)})`,
+                                backgroundPosition: 'center',
+                                backgroundSize: 'cover',
+                                backgroundColor: '#404040',
+                                cursor: 'pointer'
+                              }}
+                              onClick={() => setUploadImageOverlay(URL.createObjectURL(_))}
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
+                    ) : (
+                      <Box sx={{ width: '100%' }}>
+                        <InputImageComponent onChange={handleOnChangeImage}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', width: '100%' }}>
+                            <Typography variant="p" sx={{ flex: 1 }}>
+                              Pilih Gambar
+                            </Typography>
+                            <IconChevronRight size={24} strokeWidth={2} color={'black'} />
+                          </Box>
+                        </InputImageComponent>
+                      </Box>
+                    )}
+                  </Box>
+                </Box>
+                <Typography variant="h4" sx={{ marginBottom: 1, color: 'rgba(0,0,0,0.6)' }}>
+                  Catatan
+                </Typography>
+                <FormControl
+                  variant="outlined"
+                  className="input"
+                  sx={{ background: 'transparent', backgroundColor: 'transparent', marginBottom: 2 }}
+                >
                   <OutlinedInput
                     id="InputCatatan"
                     type="text"
-                    label="Catatan"
-                    placeholder="text"
                     autoComplete="off"
+                    sx={{ background: 'transparent', backgroundColor: 'transparent' }}
+                    inputProps={{
+                      style: {
+                        background: 'rgba(255,255,255,0.5)',
+                        backgroundColor: 'rgba(255,255,255,0.5)'
+                      }
+                    }}
                   />
                 </FormControl>
                 <Box sx={{ flex: 1 }} />
@@ -398,6 +531,14 @@ export default function ProductDetailPage() {
           </Box>
         </Grid>
       </Grid>
+      <ColorPicker
+        open={openDialogColorPicker}
+        onClose={() => setOpenDialogColorPicker(false)}
+        onConfirmed={(_) => {
+          setColorSelected([...colorSelected, _]);
+        }}
+      />
+      <Lightbox image={uploadImageOverlay} title="Referensi Desain" onClose={() => setUploadImageOverlay(null)} />
     </Fragment>
   );
 }

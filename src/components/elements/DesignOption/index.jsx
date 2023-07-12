@@ -1,6 +1,6 @@
 import { Box, Button, Typography } from '@mui/material';
 import { Fragment } from 'react';
-import InputFileComponent from '../InputFile';
+import InputFileComponent from '../InputImage';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd';
 
